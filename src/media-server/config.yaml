@@ -1,0 +1,6 @@
+app:
+  name: media server
+
+http:
+  port: :7000
+  keep_alive_timeout: 10
