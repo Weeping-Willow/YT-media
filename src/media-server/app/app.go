@@ -90,6 +90,11 @@ func (a *app) getConfig() (conf.Config, error) {
 		Http: conf.Http{
 			Port: ":7000",
 		},
+		Storage: conf.Storage{
+			Local: conf.Local{
+				Path: "./local_storage/",
+			},
+		},
 	}
 
 	// TOOD: fix actually returing config
@@ -97,7 +102,7 @@ func (a *app) getConfig() (conf.Config, error) {
 }
 
 func (a *app) fillRepository() {
-	a.fileRepository = local_storage.NewFileRepository()
+	a.fileRepository = local_storage.NewFileRepository(a.config.Storage)
 }
 
 func (a *app) fillService() {
@@ -125,6 +130,7 @@ func (a *app) startHTTPServer() error {
 func (a *app) getEcho() *echo.Echo {
 	e := echo.New()
 	e.Use(middleware.Recover())
+	e.Use(middleware.Logger())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
 		AllowMethods: []string{http.MethodGet, http.MethodOptions, http.MethodPut, http.MethodPost, http.MethodDelete},

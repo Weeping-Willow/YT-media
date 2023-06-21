@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"media-server/repository"
+	"media-server/utils/ctxutil"
 )
 
 type FileService interface {
@@ -25,8 +26,14 @@ func NewFileService(fileRepository repository.FileRepository) FileService {
 }
 
 func (f fileService) Exist(c context.Context, path string) (bool, error) {
-	//TODO implement me
-	panic("implement me")
+	logger := ctxutil.GetLogger(c)
+	exists, err := f.fileRepository.Exist(c, path)
+	if err != nil {
+		logger.WithError(err).Error("Failed to check file existence")
+		return false, err //TODO: return error that implements handler error interface
+	}
+
+	return exists, nil
 }
 
 func (f fileService) Update(c context.Context) error {
