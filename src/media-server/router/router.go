@@ -1,6 +1,10 @@
 package router
 
-import "github.com/labstack/echo/v4"
+import (
+	"media-server/handler"
+
+	"github.com/labstack/echo/v4"
+)
 
 const APIPath = "api/v1"
 
@@ -8,10 +12,14 @@ type Router interface {
 	RegisterRoutes(e *echo.Echo)
 }
 
-type router struct{}
+type router struct {
+	fileHandler handler.FileHandler
+}
 
-func NewRouter() Router {
-	return &router{}
+func NewRouter(fileHandler handler.FileHandler) Router {
+	return &router{
+		fileHandler: fileHandler,
+	}
 }
 
 func (r router) RegisterRoutes(e *echo.Echo) {
@@ -19,4 +27,6 @@ func (r router) RegisterRoutes(e *echo.Echo) {
 	g.GET("/health", func(c echo.Context) error {
 		return c.String(200, "ok")
 	})
+
+	r.RegisterFileRoutes(g)
 }

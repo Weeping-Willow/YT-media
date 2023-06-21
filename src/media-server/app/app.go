@@ -8,7 +8,11 @@ import (
 	"os"
 
 	conf "media-server/config"
+	"media-server/handler"
+	"media-server/repository"
+	local_storage "media-server/repository/local"
 	http_router "media-server/router"
+	"media-server/service"
 
 	"github.com/gookit/config"
 	"github.com/gookit/config/yaml"
@@ -25,6 +29,12 @@ type App interface {
 
 type app struct {
 	config conf.Config
+
+	fileService service.FileService
+
+	fileHandler handler.FileHandler
+
+	fileRepository repository.FileRepository
 }
 
 func NewApp() App {
@@ -52,13 +62,12 @@ func (a *app) setup() error {
 	}
 	a.config = cfg
 
-	c := a.getEcho()
-	router := http_router.NewRouter()
-	router.RegisterRoutes(c)
+	a.fillRepository()
+	a.fillService()
+	a.fillHandlers()
 
-	err = a.StartEcho(c)
-	if err != nil {
-		return errors.Wrap(err, "failed to start echo")
+	if err := a.startHTTPServer(); err != nil {
+		return errors.Wrap(err, "failed to start http server")
 	}
 
 	return nil
@@ -85,6 +94,32 @@ func (a *app) getConfig() (conf.Config, error) {
 
 	// TOOD: fix actually returing config
 	return cfg, nil
+}
+
+func (a *app) fillRepository() {
+	a.fileRepository = local_storage.NewFileRepository()
+}
+
+func (a *app) fillService() {
+	a.fileService = service.NewFileService(a.fileRepository)
+}
+
+func (a *app) fillHandlers() {
+	a.fileHandler = handler.NewFileHandler(a.fileService)
+}
+
+func (a *app) startHTTPServer() error {
+	c := a.getEcho()
+
+	router := http_router.NewRouter(a.fileHandler)
+	router.RegisterRoutes(c)
+
+	err := a.StartEcho(c)
+	if err != nil {
+		return errors.Wrap(err, "failed to start echo")
+	}
+
+	return nil
 }
 
 func (a *app) getEcho() *echo.Echo {

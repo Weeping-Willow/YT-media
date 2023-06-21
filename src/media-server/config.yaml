@@ -4,3 +4,7 @@ app:
 http:
   port: :7000
   keep_alive_timeout: 10
+
+storage:
+  local:
+    path: ./storage
