@@ -5,6 +5,7 @@ import (
 
 	"media-server/repository"
 	"media-server/utils/ctxutil"
+	"media-server/utils/httputil"
 )
 
 type FileService interface {
@@ -19,6 +20,10 @@ type fileService struct {
 	fileRepository repository.FileRepository
 }
 
+var (
+	ErrCheckIfFileExists = httputil.ServerErrorWithMsg("check if file exists")
+)
+
 func NewFileService(fileRepository repository.FileRepository) FileService {
 	return &fileService{
 		fileRepository: fileRepository,
@@ -30,7 +35,7 @@ func (f fileService) Exist(c context.Context, path string) (bool, error) {
 	exists, err := f.fileRepository.Exist(c, path)
 	if err != nil {
 		logger.WithError(err).Error("Failed to check file existence")
-		return false, err //TODO: return error that implements handler error interface
+		return false, ErrCheckIfFileExists
 	}
 
 	return exists, nil
