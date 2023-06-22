@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"time"
 
 	conf "media-server/config"
 	"media-server/handler"
@@ -14,8 +15,8 @@ import (
 	http_router "media-server/router"
 	"media-server/service"
 
-	"github.com/gookit/config"
-	"github.com/gookit/config/yaml"
+	"github.com/gookit/config/v2"
+	"github.com/gookit/config/v2/yaml"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/pkg/errors"
@@ -83,21 +84,10 @@ func (a *app) getConfig() (conf.Config, error) {
 		return conf.Config{}, errors.Wrap(err, "failed to load config")
 	}
 
-	cfg = conf.Config{
-		App: conf.App{
-			Name: "Media Server",
-		},
-		Http: conf.Http{
-			Port: ":7000",
-		},
-		Storage: conf.Storage{
-			Local: conf.Local{
-				Path: "./local_storage/",
-			},
-		},
+	if err := config.Decode(&cfg); err != nil {
+		return conf.Config{}, errors.Wrap(err, "failed to decode config")
 	}
 
-	// TOOD: fix actually returing config
 	return cfg, nil
 }
 
@@ -141,7 +131,7 @@ func (a *app) getEcho() *echo.Echo {
 
 func (a *app) StartEcho(e *echo.Echo) error {
 	logrus.Infof("Starting HTTP server on: %s", a.config.Http.Port)
-	listenConfig := net.ListenConfig{KeepAlive: a.config.Http.KeepAliveTimeout}
+	listenConfig := net.ListenConfig{KeepAlive: time.Duration(int(time.Second) * a.config.Http.Timeout)}
 	listener, err := listenConfig.Listen(context.Background(), "tcp", a.config.Http.Port)
 	if err != nil {
 		return errors.Wrapf(err, "failed to setup TCP listener at %s", a.config.Port)

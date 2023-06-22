@@ -1,7 +1,5 @@
 package config
 
-import "time"
-
 type (
 	Config struct {
 		App
@@ -14,8 +12,8 @@ type (
 	}
 
 	Http struct {
-		Port             string        `yaml:"port"`
-		KeepAliveTimeout time.Duration `yaml:"keep_alive_timeout"`
+		Port    string `yaml:"port"`
+		Timeout int    `yaml:"timeout"`
 	}
 
 	Storage struct {
