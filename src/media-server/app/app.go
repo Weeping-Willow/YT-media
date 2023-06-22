@@ -100,7 +100,7 @@ func (a *app) fillService() {
 }
 
 func (a *app) fillHandlers() {
-	a.fileHandler = handler.NewFileHandler(a.fileService)
+	a.fileHandler = handler.NewFileHandler(a.fileService, a.config.Storage)
 }
 
 func (a *app) startHTTPServer() error {

@@ -8,4 +8,8 @@ type (
 	FileExitsResponse struct {
 		Exists bool `json:"exists"`
 	}
+
+	FileGetRequest struct {
+		Path string `param:"path" valid:"required"`
+	}
 )

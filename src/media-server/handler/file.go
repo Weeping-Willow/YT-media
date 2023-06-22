@@ -2,7 +2,9 @@ package handler
 
 import (
 	"net/http"
+	"path/filepath"
 
+	"media-server/config"
 	"media-server/service"
 	"media-server/structures/dto"
 	"media-server/utils/httputil"
@@ -20,11 +22,13 @@ type FileHandler interface {
 
 type fileHandler struct {
 	fileService service.FileService
+	conf        config.Storage
 }
 
-func NewFileHandler(fileService service.FileService) FileHandler {
+func NewFileHandler(fileService service.FileService, conf config.Storage) FileHandler {
 	return fileHandler{
 		fileService: fileService,
+		conf:        conf,
 	}
 }
 
@@ -45,22 +49,26 @@ func (f fileHandler) Exist(ctx echo.Context) error {
 
 }
 
-func (f fileHandler) Update(context echo.Context) error {
+func (f fileHandler) Update(ctx echo.Context) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (f fileHandler) Create(context echo.Context) error {
+func (f fileHandler) Create(ctx echo.Context) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (f fileHandler) Delete(context echo.Context) error {
+func (f fileHandler) Delete(ctx echo.Context) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (f fileHandler) Get(context echo.Context) error {
-	//TODO implement me
-	panic("implement me")
+func (f fileHandler) Get(ctx echo.Context) error {
+	var req dto.FileExitsRequest
+	if errs := httputil.BindStrict(ctx, &req); errs != nil {
+		return ctx.JSON(http.StatusBadRequest, errs)
+	}
+
+	return ctx.File(f.conf.Path + filepath.Clean(req.Path))
 }
