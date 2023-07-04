@@ -3,6 +3,6 @@
 
 <template>
   <main>
-    Home
+    Stats
   </main>
 </template>
